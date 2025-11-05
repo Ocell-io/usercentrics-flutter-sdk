@@ -354,4 +354,9 @@ class FakeUsercentricsPlatform extends UsercentricsPlatform {
     clearUserSessionCount++;
     return Future.value(clearUserSessionAnswer!);
   }
+
+  @override
+  Stream<UsercentricsEvent> streamUsercentricEvents() {
+    return const Stream.empty();
+  }
 }

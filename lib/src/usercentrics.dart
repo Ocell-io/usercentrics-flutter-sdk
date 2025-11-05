@@ -209,4 +209,8 @@ class Usercentrics {
   /// Clears the user session avoiding the sdk initialization.
   static Future<UsercentricsReadyStatus> clearUserSession() =>
       _delegate.clearUserSession();
+
+  /// Streams sdk events on web
+  static Stream<UsercentricsEvent> streamUsercentricEvents() =>
+      _delegate.streamUsercentricEvents();
 }
