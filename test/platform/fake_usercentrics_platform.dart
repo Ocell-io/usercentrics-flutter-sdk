@@ -12,7 +12,6 @@ import 'package:usercentrics_sdk/src/model/tcf_data.dart';
 import 'package:usercentrics_sdk/src/model/tcf_decision_ui_layer.dart';
 import 'package:usercentrics_sdk/src/model/user_decision.dart';
 import 'package:usercentrics_sdk/src/model/user_response.dart';
-import 'package:usercentrics_sdk/src/model/usercentrics_event.dart';
 import 'package:usercentrics_sdk/src/platform/usercentrics_platform.dart';
 
 // Mock UsercentricsPlatform implementation
