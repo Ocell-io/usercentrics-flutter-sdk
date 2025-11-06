@@ -1,35 +1,32 @@
 import 'dart:js_interop';
 import 'package:usercentrics_sdk/src/model/model.dart';
 
-Future<List<UsercentricsServiceConsent>> parseUsercentricsConsents(JSAny jsDetails) async {
-  final data = jsDetails.dartify();
+Future<List<UsercentricsServiceConsent>> parseUsercentricsConsents(
+    JSAny jsDetails) async {
+  final services = jsDetails.dartify();
 
-  if (data is! Map) {
-    throw StateError('Unexpected getConsentDetails() shape: $data');
+  if (services is! List) {
+    throw StateError('Unexpected getServicesBaseInfo() shape: $services');
   }
-
-  final services = data['services'];
-  if (services is! Map) return const [];
 
   final results = <UsercentricsServiceConsent>[];
 
-  for (final entry in services.entries) {
-    final id = entry.key as String;
-    final svc = entry.value;
-    if (svc is! Map) continue;
+  for (final entry in services) {
+    if (entry is! Map) continue;
 
-    final name = svc['name']?.toString() ?? '';
-    final category = svc['category']?.toString() ?? '';
-    final version = svc['version']?.toString() ?? '';
-    final consent = svc['consent'] as Map?;
-    final essential = svc['essential'] == true;
+    final name = entry['name']?.toString() ?? '';
+    final category = entry['category']?.toString() ?? '';
+    final version = entry['version']?.toString() ?? '';
+    final consent = entry['consent'] as Map?;
+    final essential = entry['essential'] == true;
+    final processorTemplateId = entry['processorId'] as String?;
 
     final given = consent?['given'] == true;
     final typeStr = consent?['type']?.toString();
 
     results.add(
       UsercentricsServiceConsent(
-        templateId: id,
+        templateId: processorTemplateId ?? '',
         dataProcessor: name,
         category: category,
         version: version,

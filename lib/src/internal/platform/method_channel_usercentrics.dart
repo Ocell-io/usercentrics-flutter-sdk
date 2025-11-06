@@ -333,9 +333,4 @@ class MethodChannelUsercentrics extends UsercentricsPlatform {
     await _ensureIsReady();
     return await clearUserSessionBridge.invoke(channel: _channel);
   }
-
-  @override
-  Stream<UsercentricsEvent> streamUsercentricEvents() {
-    return const Stream.empty();
-  }
 }

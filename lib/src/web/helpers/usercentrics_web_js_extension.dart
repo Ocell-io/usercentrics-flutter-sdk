@@ -1,6 +1,6 @@
 import 'dart:js_interop';
 
-@JS('__ucCmp')
+@JS('UC_UI')
 external UCcmpJS? get ucCmpJs;
 
 @JS()
@@ -8,30 +8,17 @@ external UCcmpJS? get ucCmpJs;
 class UCcmpJS {}
 
 extension UCcmpJSExtension on UCcmpJS {
-  external JSPromise showFirstLayer();
-
   external JSPromise showSecondLayer();
 
-  external JSPromise acceptAllConsents();
+  external JSPromise getServicesBaseInfo();
 
-  external JSPromise denyAllConsents();
+  external JSString getControllerId();
 
-  external JSPromise saveConsents();
-
-  external JSPromise getConsentDetails();
-
-  external JSPromise getControllerId();
-
-  external JSPromise changeLanguage(JSString lang);
-
-  external JSPromise clearUserSession();
-
-  external JSPromise updateServicesConsents(JSArray services);
-
-  external JSPromise updateTcfConsents(JSObject tcfConsents);
+  external JSPromise updateLanguage(JSString lang);
 }
 
 @JS('window.addEventListener')
 external void addWindowEventListener(JSString type, JSFunction callback);
 
-Future<T> awaitJs<T>(JSPromise p) async => (await p.toDart) as T;
+@JS('window.removeEventListener')
+external void removeEventListener(JSString type, JSFunction callback);

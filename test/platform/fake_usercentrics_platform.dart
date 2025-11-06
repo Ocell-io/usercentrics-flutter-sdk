@@ -341,6 +341,7 @@ class FakeUsercentricsPlatform extends UsercentricsPlatform {
 
   final AdditionalConsentModeData? acmDataAnswer;
   var acmDataCount = 0;
+
   @override
   Future<AdditionalConsentModeData> get additionalConsentModeData {
     acmDataCount++;
@@ -354,10 +355,5 @@ class FakeUsercentricsPlatform extends UsercentricsPlatform {
   Future<UsercentricsReadyStatus> clearUserSession() {
     clearUserSessionCount++;
     return Future.value(clearUserSessionAnswer!);
-  }
-
-  @override
-  Stream<UsercentricsEvent> streamUsercentricEvents() {
-    return const Stream.empty();
   }
 }

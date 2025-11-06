@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:usercentrics_sdk/src/web/events/usercentrics_web_events.dart';
+import 'package:usercentrics_sdk/src/web/events/usercentrics_web_close_event.dart';
 import 'package:usercentrics_sdk/src/web/helpers/parse_helper.dart';
 import 'package:usercentrics_sdk/src/web/helpers/usercentrics_web_js_extension.dart';
 import 'package:usercentrics_sdk/usercentrics_sdk.dart';
@@ -16,7 +16,6 @@ class UsercentricsWeb extends UsercentricsPlatform {
   }
 
   UCcmpJS? get _ucCmp => ucCmpJs;
-
 
   @override
   // TODO: implement aBTestingVariant
@@ -48,7 +47,7 @@ class UsercentricsWeb extends UsercentricsPlatform {
 
   @override
   Future<void> changeLanguage({required String language}) async {
-    _ucCmp?.changeLanguage(language.toJS);
+    _ucCmp?.updateLanguage(language.toJS);
   }
 
   @override
@@ -68,9 +67,8 @@ class UsercentricsWeb extends UsercentricsPlatform {
     }
 
     try {
-      final jsDetails = await awaitJs<JSAny>(_ucCmp!.getConsentDetails());
-      final consents = await parseUsercentricsConsents(jsDetails);
-
+      final jsDetails = await _ucCmp!.getServicesBaseInfo().toDart;
+      final consents = await parseUsercentricsConsents(jsDetails!);
       return consents;
     } catch (e) {
       debugPrint('Usercentrics Web: Consents could not be loaded: $e');
@@ -114,11 +112,8 @@ class UsercentricsWeb extends UsercentricsPlatform {
       _ensureUsercentricsScript(
         settingsId: settingsId.isNotEmpty ? settingsId : null,
         ruleSetId: ruleSetId.isNotEmpty ? ruleSetId : null,
+        defaultLanguage: defaultLanguage,
       );
-
-    }
-    if (defaultLanguage != null) {
-      changeLanguage(language: defaultLanguage);
     }
   }
 
@@ -182,18 +177,18 @@ class UsercentricsWeb extends UsercentricsPlatform {
     }
 
     try {
-      final jsResult = await awaitJs<JSAny>(_ucCmp!.showSecondLayer());
+      final closeEvent = UsercentricsWebCloseEvent();
 
-      final dartified = jsResult.dartify();
+      await _ucCmp!.showSecondLayer().toDart;
 
-      final consents = await parseUsercentricsConsents(jsResult);
+      final userInteraction = await closeEvent.userInteraction;
+      final controllerId = _ucCmp!.getControllerId().toDart;
 
       return UsercentricsConsentUserResponse(
-          consents: consents,
-          userInteraction: UsercentricsUserInteraction.acceptAll,
-          controllerId: dartified is Map
-              ? dartified['consent']['controllerId'] as String? ?? ''
-              : '');
+        consents: await consents,
+        userInteraction: userInteraction,
+        controllerId: controllerId,
+      );
     } catch (e) {
       return null;
     }
@@ -216,12 +211,6 @@ class UsercentricsWeb extends UsercentricsPlatform {
   @override
   // TODO: implement userSessionData
   Future<String> get userSessionData => throw UnimplementedError();
-
-  @override
-  Stream<UsercentricsEvent> streamUsercentricEvents() {
-    UsercentricsWebEvents.init(windowEventName: 'ucEvent');
-    return UsercentricsWebEvents.stream;
-  }
 
   void _ensureUsercentricsScript({
     String? settingsId,

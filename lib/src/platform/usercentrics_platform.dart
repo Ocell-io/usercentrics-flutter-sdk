@@ -100,6 +100,4 @@ abstract class UsercentricsPlatform {
   });
 
   Future<UsercentricsReadyStatus> clearUserSession();
-
-  Stream<UsercentricsEvent> streamUsercentricEvents();
 }

@@ -157,9 +157,4 @@ class FakeUsercentrics extends UsercentricsPlatform {
   Future<UsercentricsReadyStatus> clearUserSession() {
     throw UnimplementedError();
   }
-
-  @override
-  Stream<UsercentricsEvent> streamUsercentricEvents() {
-    throw UnimplementedError();
-  }
 }
