@@ -8,11 +8,17 @@ external UCcmpJS? get ucCmpJs;
 class UCcmpJS {}
 
 extension UCcmpJSExtension on UCcmpJS {
+  external JSPromise showFirstLayer();
+
   external JSPromise showSecondLayer();
 
   external JSPromise getServicesBaseInfo();
 
   external JSString getControllerId();
+
+  external JSBoolean isConsentRequired();
+
+  external JSBoolean isInitialized();
 
   external JSPromise updateLanguage(JSString lang);
 }

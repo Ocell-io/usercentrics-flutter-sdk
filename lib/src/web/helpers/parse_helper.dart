@@ -15,14 +15,13 @@ Future<List<UsercentricsServiceConsent>> parseUsercentricsConsents(
     if (entry is! Map) continue;
 
     final name = entry['name']?.toString() ?? '';
-    final category = entry['category']?.toString() ?? '';
+    final category = entry['categorySlug']?.toString() ?? '';
     final version = entry['version']?.toString() ?? '';
     final consent = entry['consent'] as Map?;
     final essential = entry['essential'] == true;
     final processorTemplateId = entry['processorId'] as String?;
 
-    final given = consent?['given'] == true;
-    final typeStr = consent?['type']?.toString();
+    final status = consent?['status'] as bool;
 
     results.add(
       UsercentricsServiceConsent(
@@ -31,13 +30,13 @@ Future<List<UsercentricsServiceConsent>> parseUsercentricsConsents(
         category: category,
         version: version,
         isEssential: essential,
-        status: given,
-        type: _mapConsentType(typeStr),
+        status: status,
+        type: null,
         history: [
           UsercentricsConsentHistoryEntry(
-            status: given,
+            status: status,
             timestampInMillis: DateTime.now().millisecondsSinceEpoch,
-            type: _mapConsentType(typeStr),
+            type: null,
           )
         ],
       ),
@@ -45,16 +44,4 @@ Future<List<UsercentricsServiceConsent>> parseUsercentricsConsents(
   }
 
   return results;
-}
-
-UsercentricsConsentType? _mapConsentType(String? type) {
-  if (type == null) return null;
-  switch (type.toUpperCase()) {
-    case 'EXPLICIT':
-      return UsercentricsConsentType.explicit;
-    case 'IMPLICIT':
-      return UsercentricsConsentType.implicit;
-    default:
-      return null;
-  }
 }

@@ -17,6 +17,9 @@ class UsercentricsWeb extends UsercentricsPlatform {
 
   UCcmpJS? get _ucCmp => ucCmpJs;
 
+  String ruleSetId = '';
+  String settingsId = '';
+
   @override
   // TODO: implement aBTestingVariant
   Future<String?> get aBTestingVariant => throw UnimplementedError();
@@ -78,8 +81,8 @@ class UsercentricsWeb extends UsercentricsPlatform {
   }
 
   @override
-  // TODO: implement controllerId
-  Future<String> get controllerId => throw UnimplementedError();
+  Future<String> get controllerId =>
+      Future.value(_ucCmp!.getControllerId().toDart);
 
   @override
   Future<List<UsercentricsServiceConsent>> denyAll(
@@ -109,9 +112,9 @@ class UsercentricsWeb extends UsercentricsPlatform {
     int? initTimeoutMillis,
   }) {
     if (_ucCmp == null && (settingsId.isNotEmpty || ruleSetId.isNotEmpty)) {
+      this.settingsId = settingsId;
+      this.ruleSetId = ruleSetId;
       _ensureUsercentricsScript(
-        settingsId: settingsId.isNotEmpty ? settingsId : null,
-        ruleSetId: ruleSetId.isNotEmpty ? ruleSetId : null,
         defaultLanguage: defaultLanguage,
       );
     }
@@ -164,9 +167,26 @@ class UsercentricsWeb extends UsercentricsPlatform {
 
   @override
   Future<UsercentricsConsentUserResponse?> showFirstLayer(
-      {BannerSettings? settings}) {
-    // TODO: implement showFirstLayer
-    throw UnimplementedError();
+      {BannerSettings? settings}) async {
+    if (_ucCmp == null) {
+      return null;
+    }
+
+    try {
+      final closeEvent = UsercentricsWebCloseEvent();
+
+      await _ucCmp!.showFirstLayer().toDart;
+
+      final userInteraction = await closeEvent.userInteraction;
+
+      return UsercentricsConsentUserResponse(
+        consents: await consents,
+        userInteraction: userInteraction,
+        controllerId: await controllerId,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -182,12 +202,11 @@ class UsercentricsWeb extends UsercentricsPlatform {
       await _ucCmp!.showSecondLayer().toDart;
 
       final userInteraction = await closeEvent.userInteraction;
-      final controllerId = _ucCmp!.getControllerId().toDart;
 
       return UsercentricsConsentUserResponse(
         consents: await consents,
         userInteraction: userInteraction,
-        controllerId: controllerId,
+        controllerId: await controllerId,
       );
     } catch (e) {
       return null;
@@ -195,8 +214,27 @@ class UsercentricsWeb extends UsercentricsPlatform {
   }
 
   @override
-  // TODO: implement status
-  Future<UsercentricsReadyStatus> get status => throw UnimplementedError();
+  Future<UsercentricsReadyStatus> get status async {
+    await _waitUntilInitialized();
+    final shouldCollectConsent = _ucCmp?.isConsentRequired().toDart ?? false;
+
+    return UsercentricsReadyStatus(
+      shouldCollectConsent: shouldCollectConsent,
+      consents: await consents,
+      location: const UsercentricsLocation(
+        // TODO: find method for location
+        countryCode: '',
+        regionCode: '',
+        isInEU: false,
+        isInUS: false,
+        isInCalifornia: false,
+      ),
+      geolocationRuleset: GeolocationRuleset(
+        activeSettingsId: ruleSetId,
+        bannerRequiredAtLocation: false,
+      ), // TODO: find method for geolocationRuleset
+    );
+  }
 
   @override
   // TODO: implement tcfData
@@ -213,8 +251,6 @@ class UsercentricsWeb extends UsercentricsPlatform {
   Future<String> get userSessionData => throw UnimplementedError();
 
   void _ensureUsercentricsScript({
-    String? settingsId,
-    String? ruleSetId,
     String? defaultLanguage,
   }) {
     final doc = web.document;
@@ -223,13 +259,18 @@ class UsercentricsWeb extends UsercentricsPlatform {
       return;
     }
 
+    final suppressScript = web.HTMLScriptElement()
+      ..type = 'application/javascript'
+      ..text = 'var UC_UI_SUPPRESS_CMP_DISPLAY = true;';
+    doc.head!.append(suppressScript);
+
     final script = web.HTMLScriptElement()
       ..id = 'usercentrics-cmp'
       ..src = 'https://web.cmp.usercentrics.eu/ui/loader.js';
 
-    if (settingsId != null && settingsId.isNotEmpty) {
+    if (settingsId.isNotEmpty) {
       script.setAttribute('data-settings-id', settingsId);
-    } else if (ruleSetId != null && ruleSetId.isNotEmpty) {
+    } else if (ruleSetId.isNotEmpty) {
       script.setAttribute('data-ruleset-id', ruleSetId);
     }
 
@@ -238,5 +279,24 @@ class UsercentricsWeb extends UsercentricsPlatform {
     }
 
     doc.head!.append(script);
+  }
+
+  Future<bool> _waitUntilInitialized() async {
+    const checkInterval = Duration(milliseconds: 50);
+    const timeout = Duration(seconds: 1);
+
+    final stopwatch = Stopwatch()..start();
+
+    while (stopwatch.elapsed < timeout) {
+      final bool isReady = _ucCmp?.isInitialized().toDart ?? false;
+
+      if (isReady) {
+        return true;
+      }
+
+      await Future.delayed(checkInterval);
+    }
+
+    return false;
   }
 }
