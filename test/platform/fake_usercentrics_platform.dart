@@ -340,6 +340,7 @@ class FakeUsercentricsPlatform extends UsercentricsPlatform {
 
   final AdditionalConsentModeData? acmDataAnswer;
   var acmDataCount = 0;
+
   @override
   Future<AdditionalConsentModeData> get additionalConsentModeData {
     acmDataCount++;

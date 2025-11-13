@@ -9,7 +9,7 @@ repository: https://github.com/Usercentrics/flutter-sdk/
 #  [X] android/build.gradle
 #  [X] ios/usercentrics_sdk.podspec + pod install/update
 #  [X] CHANGELOG.md
-version: 2.23.3
+version: 2.24.0
 
 environment:
   sdk: ">=2.17.1 <4.0.0"
@@ -20,6 +20,7 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

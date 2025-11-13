@@ -31,5 +31,7 @@ export 'tcf_decision_ui_layer.dart';
 export 'user_decision.dart';
 export 'user_interaction.dart';
 export 'user_response.dart';
+export 'usercentrics_event.dart';
+export 'usercentrics_events.dart';
 export 'variant.dart';
 export 'legal_basis.dart';
